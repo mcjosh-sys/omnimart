@@ -1,25 +1,21 @@
 import { cn } from "@/lib/utils"
 import { Store } from "@prisma/client"
-import { Activity, X } from "lucide-react"
 import { StoreSwitcher } from "./store-switcher"
-import { Button } from "./ui/button"
 import { useParams, usePathname } from "next/navigation"
 import { getRoutes } from "@/actions/get-routes"
 import Link from "next/link"
-import IconButton from "./ui/icon-button"
 import Icon from "./icon"
-import { useEffect, useRef } from "react"
 import { Switch } from "./ui/switch"
 import { Label } from "./ui/label"
 import { useTheme } from "next-themes"
+import { SheetClose, SheetContent } from "./ui/sheet"
 
 interface SidePanelProps {
     className?: string
-    onClose: () => void
     stores: Store[]
 }
 
-const SidePanel: React.FC<SidePanelProps> = ({ className, onClose, stores }) => {
+const SidePanel: React.FC<SidePanelProps> = ({ className, stores }) => {
     const pathname = usePathname()
     const params = useParams()
 
@@ -35,56 +31,48 @@ const SidePanel: React.FC<SidePanelProps> = ({ className, onClose, stores }) => 
             setTheme("light")
     }
 
-    useEffect(() => {
-        onClose()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pathname])
-
 
     return (
-        <div className={cn("fixed top-0 left-0 h-full w-full z-50 backdrop-blur-md", className)}>
-            <div className="bg-background h-full w-[45%]">
-                <div className="flex justify-end">
-                    <Button
-                        onClick={onClose}
-                        variant="ghost"
-                    >
-                        <X />
-                    </Button>
+        <SheetContent
+            side='left'
+            className={cn("z-50 backdrop-blur-md", className)}
+        >
+            <div className="divide-y space-y-4 px-4 pt-8 gap-y-4 flex flex-col">
+                <div className="text-muted-foreground flex justify-between items-center">
+                    <Label htmlFor="dark-mode">Dark Mode</Label>
+                    <Switch id="dark-mode" checked={theme === "dark" ? true : false} onCheckedChange={onCheckChange} />
                 </div>
-                <div className="divide-y space-y-4 px-4 pt-8 gap-y-4 flex flex-col">
-                    <div className="text-muted-foreground flex justify-between items-center">
-                        <Label htmlFor="dark-mode">Dark Mode</Label>
-                        <Switch id="dark-mode" checked={theme === "dark" ? true : false} onCheckedChange={onCheckChange} />
-                    </div>
 
-                    <div className="text-muted-foreground pt-4">
-                        <h1 className="font-semibold">Switch store</h1>
-                        <div className="pt-2">
-                            <StoreSwitcher items={stores} />
-                        </div>
+                <div className="text-muted-foreground pt-6">
+                    <p>Switch store</p>
+                    <div className="pt-2">
+                        <StoreSwitcher items={stores} />
                     </div>
+                </div>
 
-                    <div className="flex flex-col pt-4">
-                        {routes.map(({ href, active, label }) => (
+                <div className="flex flex-col pt-4">
+                    {routes.map(({ href, active, label }) => (
+                        <SheetClose
+                            key={href}>
                             <Link
-                                key={href}
                                 href={href}
-                                className={cn("flex items-center rounded-sm py-2 gap-x-2 group hover:text-primary", {
-                                    "text-primary": active,
+                                className={cn("flex items-center rounded-sm p-2 gap-x-2 group hover:text-primary hover:bg-muted transition-all duration-500",
+                                    {
+                                    "text-primary font-semibold": active,
                                     "text-muted-foreground": !active,
-                                })}
+                                    }
+                                )}
                             >
-                                <div className={cn("rounded group-hover:bg-muted w-6 h-6 flex justify-center items-center mr-2", { "bg-muted": active })}>
+                                <div className={cn("w-8 h-8 flex justify-center items-center mr-2 object-cover")}>
                                     <Icon label={label} />
                                 </div>
                                 {label}
                             </Link>
-                        ))}
-                    </div>
+                        </SheetClose>
+                    ))}
                 </div>
             </div>
-        </div>
+        </SheetContent>
     )
 }
 
